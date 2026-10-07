@@ -15,11 +15,12 @@ class Enquiry(Base):
     source = Column(String(50), default="manual")
 
     intent = Column(String(100))
+    action = Column(String(100))
     location = Column(String(150))
     requirement = Column(Text)
     budget = Column(String(100))
 
-    enquiry_date = Column(Date)
+    enquiry_date = Column(String(100))
     number_of_people = Column(Integer)
 
     additional_details = Column(Text)

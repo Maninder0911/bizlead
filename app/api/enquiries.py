@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
@@ -8,12 +10,19 @@ from app.schemas.enquiry import (
     EnquiryResponse,
     EnquiryUpdate
 )
+
 from app.services.enquiry_service import (
     create_enquiry, 
     get_all_enquiries,
     get_enquiry_by_id,
-    update_enquiry
+    update_enquiry,
+    apply_ai_extraction
 )
+
+from app.services.ai_service import extract_enquiry_details
+
+
+logger = logging.getLogger(__name__)
 
 
 router = APIRouter(
@@ -22,17 +31,31 @@ router = APIRouter(
 )
 
 
-@router.post("/")
+@router.post("/",response_model=EnquiryResponse)
 def create_new_enquiry(
     enquiry: EnquiryCreate,
     db: Session = Depends(get_db)
 ):
-    new_enquiry = create_enquiry(db,enquiry)
+    new_enquiry = create_enquiry(db, enquiry)
 
-    return {
-        "id": new_enquiry.id,
-        "message": "Enquiry created successfully"
-    }
+    try:
+        extracted_data = extract_enquiry_details(
+            new_enquiry.raw_message
+        )
+
+        new_enquiry = apply_ai_extraction(
+            db,
+            new_enquiry,
+            extracted_data
+        )
+
+    except Exception:
+        logger.exception(
+            "AI extraction failed for enquiry ID %s",
+            new_enquiry.id
+        )
+
+    return new_enquiry
 
 @router.get("/", response_model=list[EnquiryResponse])
 def get_enquiries(
@@ -112,4 +135,33 @@ async def update_enquiry(
     db.refresh(enquiry)
 
     return enquiry """
+
+@router.post("/{enquiry_id}/extract")
+def extract_enquiry(
+    enquiry_id: int,
+    db: Session = Depends(get_db)
+):
+    enquiry = get_enquiry_by_id(db, enquiry_id)
+
+    if enquiry is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Enquiry not found"
+        )
+
+    extracted_data = extract_enquiry_details(
+        enquiry.raw_message
+    )
+
+    updated_enquiry = apply_ai_extraction(
+        db,
+        enquiry,
+        extracted_data
+    )
+
+    return {
+        "id": updated_enquiry.id,
+        "message": "Enquiry details extracted successfully",
+        "extracted_data": extracted_data
+    }
     

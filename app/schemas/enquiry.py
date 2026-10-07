@@ -17,10 +17,11 @@ class EnquiryResponse(BaseModel):
     raw_message: str
     source: Optional[str] = None
     intent: Optional[str] = None
+    action: Optional[str] = None
     location: Optional[str] = None
     requirement: Optional[str] = None
     budget: Optional[str] = None
-    enquiry_date: Optional[date] = None
+    enquiry_date: Optional[str] = None
     number_of_people: Optional[int] = None
     additional_details: Optional[str] = None
     status: Optional[str] = None
@@ -35,3 +36,17 @@ class EnquiryResponse(BaseModel):
 class EnquiryUpdate(BaseModel):
     status: Optional[str] = None,
     follow_up_date: Optional[date] = None
+
+class EnquiryExtraction(BaseModel):
+    intent: Optional[str] = None
+    action: Optional[str] = None
+    location: Optional[str] = None
+    requirement: Optional[str] = None
+    budget: Optional[str] = None
+    enquiry_date: Optional[str] = None
+    number_of_people: Optional[int] = None
+    additional_details: Optional[str] = None
+
+    model_config = {
+        "extra": "forbid"
+    }

@@ -54,3 +54,22 @@ def update_enquiry(
     db.refresh(enquiry)
 
     return enquiry
+
+def apply_ai_extraction(
+    db: Session,
+    enquiry: Enquiry,
+    extracted_data
+):
+    enquiry.intent = extracted_data.intent
+    enquiry.location = extracted_data.location
+    enquiry.action = extracted_data.action
+    enquiry.requirement = extracted_data.requirement
+    enquiry.budget = extracted_data.budget
+    enquiry.enquiry_date = extracted_data.enquiry_date
+    enquiry.number_of_people = extracted_data.number_of_people
+    enquiry.additional_details = extracted_data.additional_details
+
+    db.commit()
+    db.refresh(enquiry)
+
+    return enquiry
