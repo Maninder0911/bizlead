@@ -92,3 +92,71 @@ Customer enquiry:
     )
 
     return response.output_parsed
+
+def generate_enquiry_reply(enquiry) -> str:
+    response = client.responses.create(
+        model="gpt-4o-mini",
+        input=[
+            {
+                "role": "system",
+                "content": (
+                    "You generate professional and helpful replies "
+                    "to customer business enquiries."
+                )
+            },
+            {
+                "role": "user",
+                "content": f"""
+Generate a professional reply to the following customer enquiry.
+
+Customer name:
+{enquiry.customer_name}
+
+Customer enquiry:
+{enquiry.raw_message}
+
+Extracted information:
+Intent: {enquiry.intent}
+Action: {enquiry.action}
+Location: {enquiry.location}
+Requirement: {enquiry.requirement}
+Budget: {enquiry.budget}
+Enquiry date: {enquiry.enquiry_date}
+Number of people: {enquiry.number_of_people}
+Additional details: {enquiry.additional_details}
+
+Instructions:
+
+Instructions:
+
+- Generate only the reply message.
+- Do not include a subject line.
+- Do not include placeholders such as [Your Name],
+  [Company Name], [Phone Number], etc.
+- Do not include a signature unless business information
+  is explicitly provided.
+- Address the customer by name when available.
+- Acknowledge the customer's enquiry and summarize the
+  important requirements they have already provided.
+- Include relevant details such as location, requirement,
+  budget, date, number of people, and preferences when
+  they are available and useful to the reply.
+- Do not omit an important preference or requirement that
+  was explicitly stated by the customer.
+- Do not ask the customer to provide information that is
+  already present in the enquiry.
+- Only ask for additional information when it is genuinely
+  necessary and has not already been provided.
+- Do not invent properties, prices, availability, dates,
+  services, or other business information.
+- Do not make promises on behalf of the business.
+- Do not claim that anything is available unless this has
+  been explicitly provided as business information.
+- Keep the reply concise, natural and professional.
+- Make the reply suitable for WhatsApp, SMS, or email.
+"""
+            }
+        ]
+    )
+
+    return response.output_text

@@ -68,6 +68,27 @@ def apply_ai_extraction(
     enquiry.enquiry_date = extracted_data.enquiry_date
     enquiry.number_of_people = extracted_data.number_of_people
     enquiry.additional_details = extracted_data.additional_details
+    enquiry.generated_reply = extracted_data.generated_reply
+
+    db.commit()
+    db.refresh(enquiry)
+
+    return enquiry
+
+def save_generated_reply(db: Session, enquiry: Enquiry, reply: str):
+    enquiry.generated_reply = reply
+
+    db.commit()
+    db.refresh(enquiry)
+
+    return enquiry
+
+def update_generated_reply(
+    db: Session,
+    enquiry: Enquiry,
+    reply: str
+):
+    enquiry.generated_reply = reply
 
     db.commit()
     db.refresh(enquiry)

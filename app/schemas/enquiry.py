@@ -24,6 +24,7 @@ class EnquiryResponse(BaseModel):
     enquiry_date: Optional[str] = None
     number_of_people: Optional[int] = None
     additional_details: Optional[str] = None
+    generated_reply: Optional[str] = None
     status: Optional[str] = None
     follow_up_date: Optional[date] = None
     created_at: Optional[datetime] = None
@@ -46,7 +47,15 @@ class EnquiryExtraction(BaseModel):
     enquiry_date: Optional[str] = None
     number_of_people: Optional[int] = None
     additional_details: Optional[str] = None
+    generated_reply: Optional[str] = None
 
     model_config = {
         "extra": "forbid"
     }
+
+class ReplyGenerationResponse(BaseModel):
+    enquiry_id: int
+    reply: str
+
+class ReplyUpdate(BaseModel):
+    reply: str

@@ -24,6 +24,7 @@ class Enquiry(Base):
     number_of_people = Column(Integer)
 
     additional_details = Column(Text)
+    generated_reply = Column(Text)
 
     status = Column(String(30), default="new")
     follow_up_date = Column(Date)
