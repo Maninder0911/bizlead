@@ -1,0 +1,70 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BizLead | Enquiry Manager</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/app.js" defer></script>
+</head>
+<body>
+    <header class="topbar">
+        <div class="brand">
+            <span class="brand-icon">B</span>
+            <div>
+                <h1>BizLead</h1>
+                <p>Enquiry management made simpler</p>
+            </div>
+        </div>
+        <span class="header-label">Business workspace</span>
+    </header>
+
+    <main class="container">
+        <section class="page-heading">
+            <div>
+                <h2>Enquiries</h2>
+                <p>Manage customer enquiries and prepare professional replies.</p>
+            </div>
+            <button id="refresh-button" class="button button-secondary">
+                Refresh
+            </button>
+        </section>
+
+        <div id="message" class="message" role="status" hidden></div>
+
+        <section class="dashboard">
+            <div class="panel enquiry-panel">
+                <div class="panel-heading">
+                    <h3>All enquiries</h3>
+                    <span id="enquiry-count" class="count">0</span>
+                </div>
+
+                <div id="enquiry-list" class="enquiry-list">
+                    <p class="muted">Loading enquiries...</p>
+                </div>
+            </div>
+
+            <div class="panel detail-panel">
+                <div class="panel-heading">
+                    <h3>Enquiry details</h3>
+                </div>
+
+                <div id="enquiry-details">
+                    <div class="empty-state">
+                        <h4>Select an enquiry</h4>
+                        <p>
+                            Choose an enquiry from the list to review
+                            its details and manage its reply.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        BizLead · AI-assisted enquiry management
+    </footer>
+</body>
+</html>

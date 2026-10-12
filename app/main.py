@@ -5,6 +5,11 @@ from app.database.connection import engine
 from app.database.init_db import init_db
 from app.api.enquiries import router as enquiries_router
 
+from pathlib import Path
+
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+
 
 app = FastAPI(
     title="BizLead API",
@@ -12,14 +17,21 @@ app = FastAPI(
     version="0.1.0"
 )
 
+BASE_DIR = Path(__file__).resolve().parent.parent
+FRONTEND_DIR = BASE_DIR / "frontend"
+
+app.mount(
+    "/static",
+    StaticFiles(directory=FRONTEND_DIR),
+    name="static"
+)
+
 init_db()
 app.include_router(enquiries_router)
 
-@app.get("/")
-def root():
-    return {
-        "message": "Welcome to BizLead API"
-    }
+@app.get("/", include_in_schema=False)
+def serve_frontend():
+    return FileResponse(FRONTEND_DIR / "index.html")
 
 
 @app.get("/health")
