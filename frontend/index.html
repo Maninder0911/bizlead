@@ -1,6 +1,6 @@
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="/static/style.css">
     <script src="/static/app.js" defer></script>
 </head>
+
 <body>
     <header class="topbar">
         <div class="brand">
@@ -26,10 +27,56 @@
                 <h2>Enquiries</h2>
                 <p>Manage customer enquiries and prepare professional replies.</p>
             </div>
-            <button id="refresh-button" class="button button-secondary">
-                Refresh
-            </button>
+
+            <div class="page-actions">
+                <button id="new-enquiry-button" class="button button-primary" type="button">
+                    + New enquiry
+                </button>
+
+                <button id="refresh-button" class="button button-secondary" type="button">
+                    Refresh
+                </button>
+            </div>
         </section>
+
+        <section id="new-enquiry-panel" class="panel new-enquiry-panel" hidden>
+            <div class="panel-heading">
+                <h3>Create enquiry</h3>
+                <button id="cancel-enquiry-button" class="button button-secondary" type="button">
+                    Cancel
+                </button>
+            </div>
+
+            <form id="new-enquiry-form">
+                <div class="form-field">
+                    <label for="customer-name">Customer name *</label>
+                    <input id="customer-name" name="customer_name" type="text" maxlength="100" required>
+                </div>
+
+                <div class="form-field">
+                    <label for="customer-phone">Phone</label>
+                    <input id="customer-phone" name="phone" type="tel" maxlength="20">
+                </div>
+
+                <div class="form-field">
+                    <label for="customer-email">Email</label>
+                    <input id="customer-email" name="email" type="email" maxlength="150">
+                </div>
+
+                <div class="form-field">
+                    <label for="raw-message">Customer enquiry *</label>
+                    <textarea id="raw-message" name="raw_message" rows="5" required
+                        placeholder="Paste the customer's original message here..."></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button id="submit-enquiry-button" class="button button-primary" type="submit">
+                        Save enquiry
+                    </button>
+                </div>
+            </form>
+        </section>
+
 
         <div id="message" class="message" role="status" hidden></div>
 
@@ -67,4 +114,5 @@
         BizLead · AI-assisted enquiry management
     </footer>
 </body>
+
 </html>
