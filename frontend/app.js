@@ -23,6 +23,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const submitEnquiryButton =
         document.getElementById("submit-enquiry-button");
 
+    const enquirySearch = document.getElementById("enquiry-search");
+    const statusFilter = document.getElementById("status-filter");
+
     let enquiries = [];
     let selectedEnquiryId = null;
 
@@ -403,26 +406,58 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function renderEnquiryList() {
         enquiryList.replaceChildren();
-        enquiryCount.textContent = String(enquiries.length);
+        const searchTerm = enquirySearch.value.trim().toLowerCase();
+        const selectedStatus = statusFilter.value;
 
-        if (enquiries.length === 0) {
+        const visibleEnquiries = enquiries.filter(enquiry => {
+            const searchableText = [
+                enquiry.customer_name,
+                enquiry.phone,
+                enquiry.email,
+                enquiry.raw_message,
+                enquiry.requirement,
+                enquiry.location,
+                enquiry.intent,
+                enquiry.budget
+            ].filter(Boolean).join(" ").toLowerCase();
+
+            const matchesSearch = searchableText.includes(searchTerm);
+            const matchesStatus =
+                selectedStatus === "all" ||
+                (enquiry.status || "new").toLowerCase() === selectedStatus;
+
+            return matchesSearch && matchesStatus;
+        });
+
+        enquiryCount.textContent = String(visibleEnquiries.length);
+
+
+        if (visibleEnquiries.length === 0) {
             const emptyMessage = document.createElement("p");
             emptyMessage.className = "muted";
-            emptyMessage.textContent = "No enquiries found.";
+            emptyMessage.textContent = enquiries.length === 0
+                ? "No enquiries yet."
+                : "No enquiries match your search or filter.";
             enquiryList.appendChild(emptyMessage);
 
             enquiryDetails.innerHTML = `
                 <div class="empty-state">
-                    <h4>No enquiries yet</h4>
-                    <p>Enquiries will appear here once they have been created.</p>
+                    <h4>No matching enquiry</h4>
+                    <p>Select another status or change your search.</p>
                 </div>
-            `;
-
+`;
             selectedEnquiryId = null;
             return;
         }
 
-        for (const enquiry of enquiries) {
+        const hasVisibleSelection = visibleEnquiries.some(
+            enquiry => enquiry.id === selectedEnquiryId
+        );
+
+        if (!hasVisibleSelection) {
+            selectedEnquiryId = visibleEnquiries[0].id;
+        }
+        for (const enquiry of visibleEnquiries) {
             const item = document.createElement("button");
             item.type = "button";
             item.className = "enquiry-item";
@@ -460,16 +495,12 @@ document.addEventListener("DOMContentLoaded", () => {
             enquiryList.appendChild(item);
         }
 
-        const selectedEnquiry = enquiries.find(
+        const selectedEnquiry = visibleEnquiries.find(
             enquiry => enquiry.id === selectedEnquiryId
         );
 
         if (selectedEnquiry) {
             renderEnquiryDetails(selectedEnquiry);
-        } else {
-            selectedEnquiryId = enquiries[0].id;
-            renderEnquiryList();
-            renderEnquiryDetails(enquiries[0]);
         }
     }
 
@@ -488,12 +519,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             enquiries = await response.json();
-
             renderEnquiryList();
-
-            showMessage(
-                `Loaded ${enquiries.length} ${enquiries.length === 1 ? "enquiry" : "enquiries"}.`
-            );
         } catch (error) {
             console.error("Failed to load enquiries:", error);
             enquiryList.textContent = "Could not load enquiries.";
@@ -505,6 +531,16 @@ document.addEventListener("DOMContentLoaded", () => {
             refreshButton.disabled = false;
         }
     }
+
+    enquirySearch.addEventListener("input", () => {
+        clearMessage();
+        renderEnquiryList();
+    });
+
+    statusFilter.addEventListener("change", () => {
+        clearMessage();
+        renderEnquiryList();
+    });
 
     refreshButton.addEventListener("click", loadEnquiries);
 

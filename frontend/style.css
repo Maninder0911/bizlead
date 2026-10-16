@@ -434,3 +434,35 @@ footer {
     border-color: #2448c5;
 }
 
+
+/* Enquiry search and filters */
+.enquiry-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin-bottom: 18px;
+}
+
+.enquiry-filters label {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.enquiry-filters input,
+.enquiry-filters select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d5dce7;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 14px;
+    background: #fff;
+    color: #202938;
+}
+
+.enquiry-filters input:focus,
+.enquiry-filters select:focus {
+    outline: 2px solid #c7d3ff;
+    border-color: #2448c5;
+}
+

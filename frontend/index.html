@@ -86,6 +86,21 @@
                     <h3>All enquiries</h3>
                     <span id="enquiry-count" class="count">0</span>
                 </div>
+                <div class="enquiry-filters">
+                    <label for="enquiry-search">Search enquiries</label>
+                    <input id="enquiry-search" type="search" placeholder="Customer, requirement, location...">
+
+                    <label for="status-filter">Filter by status</label>
+                    <select id="status-filter">
+                        <option value="all">All statuses</option>
+                        <option value="new">New</option>
+                        <option value="contacted">Contacted</option>
+                        <option value="qualified">Qualified</option>
+                        <option value="converted">Converted</option>
+                        <option value="lost">Lost</option>
+                    </select>
+                </div>
+
 
                 <div id="enquiry-list" class="enquiry-list">
                     <p class="muted">Loading enquiries...</p>
