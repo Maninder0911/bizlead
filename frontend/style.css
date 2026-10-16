@@ -465,4 +465,50 @@ footer {
     outline: 2px solid #c7d3ff;
     border-color: #2448c5;
 }
+/* Follow-up summary */
+.follow-up-summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.follow-up-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+    border: 1px solid #d5dce7;
+    border-radius: 8px;
+    background: #fff;
+}
+
+.follow-up-label {
+    font-size: 12px;
+    color: #596579;
+}
+
+.follow-up-count {
+    font-size: 24px;
+    font-weight: 700;
+    color: #202938;
+}
+
+@media (max-width: 480px) {
+    .follow-up-summary {
+        gap: 6px;
+    }
+
+    .follow-up-card {
+        padding: 8px;
+    }
+
+    .follow-up-label {
+        font-size: 11px;
+    }
+
+    .follow-up-count {
+        font-size: 20px;
+    }
+}
 

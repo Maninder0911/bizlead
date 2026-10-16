@@ -7,6 +7,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const enquiryList = document.getElementById("enquiry-list");
     const enquiryCount = document.getElementById("enquiry-count");
     const enquiryDetails = document.getElementById("enquiry-details");
+    const followUpDueTodayCount = document.getElementById("follow-up-due-today");
+    const followUpOverdueCount = document.getElementById("follow-up-overdue");
+    const followUpUpcomingCount = document.getElementById("follow-up-upcoming");
 
     const newEnquiryButton =
         document.getElementById("new-enquiry-button");
@@ -403,6 +406,38 @@ document.addEventListener("DOMContentLoaded", () => {
 
         enquiryDetails.appendChild(replySection);
     }
+    function renderFollowUpSummary() {
+        const today = getLocalDateKey();
+
+        const activeEnquiries = enquiries.filter((enquiry) => {
+            const status = (enquiry.status || "new").trim().toLowerCase();
+            return !["converted", "lost"].includes(status);
+        });
+
+        const dueToday = activeEnquiries.filter((enquiry) => {
+            return enquiry.follow_up_date === today;
+        }).length;
+
+        const overdue = activeEnquiries.filter((enquiry) => {
+            return enquiry.follow_up_date && enquiry.follow_up_date < today;
+        }).length;
+
+        const upcoming = activeEnquiries.filter((enquiry) => {
+            return enquiry.follow_up_date && enquiry.follow_up_date > today;
+        }).length;
+
+        followUpDueTodayCount.textContent = String(dueToday);
+        followUpOverdueCount.textContent = String(overdue);
+        followUpUpcomingCount.textContent = String(upcoming);
+    }
+
+    function getLocalDateKey(date = new Date()) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+
+        return `${year}-${month}-${day}`;
+    }
 
     function renderEnquiryList() {
         enquiryList.replaceChildren();
@@ -519,6 +554,8 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             enquiries = await response.json();
+
+            renderFollowUpSummary();
             renderEnquiryList();
         } catch (error) {
             console.error("Failed to load enquiries:", error);
@@ -539,6 +576,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     statusFilter.addEventListener("change", () => {
         clearMessage();
+        selectedEnquiryId = null;
         renderEnquiryList();
     });
 
