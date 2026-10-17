@@ -29,6 +29,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const enquirySearch = document.getElementById("enquiry-search");
     const statusFilter = document.getElementById("status-filter");
 
+    const allEnquiriesViewButton = document.getElementById("all-enquiries-view");
+    const needsAttentionViewButton = document.getElementById("needs-attention-view");
+
+    let currentEnquiryView = "all";
+
     let enquiries = [];
     let selectedEnquiryId = null;
 
@@ -439,10 +444,42 @@ document.addEventListener("DOMContentLoaded", () => {
         return `${year}-${month}-${day}`;
     }
 
+    function updateStatusFilterOptions() {
+        const currentStatus = statusFilter.value;
+        const isAttentionView = currentEnquiryView === "attention";
+
+        const allowedStatuses = isAttentionView
+            ? ["all", "new", "contacted", "qualified"]
+            : ["all", "new", "contacted", "qualified", "converted", "lost"];
+
+        const statusLabels = {
+            all: "All statuses",
+            new: "New",
+            contacted: "Contacted",
+            qualified: "Qualified",
+            converted: "Converted",
+            lost: "Lost"
+        };
+
+        statusFilter.replaceChildren();
+
+        for (const status of allowedStatuses) {
+            const option = document.createElement("option");
+            option.value = status;
+            option.textContent = statusLabels[status];
+            statusFilter.appendChild(option);
+        }
+
+        statusFilter.value = allowedStatuses.includes(currentStatus)
+            ? currentStatus
+            : "all";
+    }
+
     function renderEnquiryList() {
         enquiryList.replaceChildren();
         const searchTerm = enquirySearch.value.trim().toLowerCase();
         const selectedStatus = statusFilter.value;
+        const today = getLocalDateKey();
 
         const visibleEnquiries = enquiries.filter(enquiry => {
             const searchableText = [
@@ -457,11 +494,22 @@ document.addEventListener("DOMContentLoaded", () => {
             ].filter(Boolean).join(" ").toLowerCase();
 
             const matchesSearch = searchableText.includes(searchTerm);
+
+            const status = (enquiry.status || "new").trim().toLowerCase();
+
             const matchesStatus =
                 selectedStatus === "all" ||
-                (enquiry.status || "new").toLowerCase() === selectedStatus;
+                status === selectedStatus;
 
-            return matchesSearch && matchesStatus;
+            const matchesAttention =
+                currentEnquiryView === "all" ||
+                (
+                    !["converted", "lost"].includes(status) &&
+                    Boolean(enquiry.follow_up_date) &&
+                    enquiry.follow_up_date <= today
+                );
+
+            return matchesSearch && matchesStatus && matchesAttention;
         });
 
         enquiryCount.textContent = String(visibleEnquiries.length);
@@ -470,9 +518,15 @@ document.addEventListener("DOMContentLoaded", () => {
         if (visibleEnquiries.length === 0) {
             const emptyMessage = document.createElement("p");
             emptyMessage.className = "muted";
-            emptyMessage.textContent = enquiries.length === 0
-                ? "No enquiries yet."
-                : "No enquiries match your search or filter.";
+            if (enquiries.length === 0) {
+                emptyMessage.textContent = "No enquiries yet.";
+            } else if (currentEnquiryView === "attention") {
+                emptyMessage.textContent =
+                    "No enquiries need attention with the current search and filters.";
+            } else {
+                emptyMessage.textContent =
+                    "No enquiries match your search or filter.";
+            }
             enquiryList.appendChild(emptyMessage);
 
             enquiryDetails.innerHTML = `
@@ -577,6 +631,32 @@ document.addEventListener("DOMContentLoaded", () => {
     statusFilter.addEventListener("change", () => {
         clearMessage();
         selectedEnquiryId = null;
+        renderEnquiryList();
+    });
+
+    allEnquiriesViewButton.addEventListener("click", () => {
+        currentEnquiryView = "all";
+        updateStatusFilterOptions();
+
+        allEnquiriesViewButton.classList.add("active");
+        needsAttentionViewButton.classList.remove("active");
+
+        selectedEnquiryId = null;
+        message.textContent = "";
+
+        renderEnquiryList();
+    });
+
+    needsAttentionViewButton.addEventListener("click", () => {
+        currentEnquiryView = "attention";
+        updateStatusFilterOptions();
+
+        needsAttentionViewButton.classList.add("active");
+        allEnquiriesViewButton.classList.remove("active");
+
+        selectedEnquiryId = null;
+        message.textContent = "";
+
         renderEnquiryList();
     });
 

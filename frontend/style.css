@@ -511,4 +511,31 @@ footer {
         font-size: 20px;
     }
 }
+/* Enquiry view toggle */
+.enquiry-view-toggle {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.view-toggle {
+    padding: 8px 12px;
+    border: 1px solid #d5dce7;
+    border-radius: 6px;
+    background: #fff;
+    color: #344054;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.view-toggle:hover {
+    background: #f3f6fa;
+}
+
+.view-toggle.active {
+    background: #e8efff;
+    border-color: #8aa8f8;
+    color: #2449a5;
+    font-weight: 600;
+}
 
