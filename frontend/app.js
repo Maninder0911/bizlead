@@ -106,6 +106,16 @@ document.addEventListener("DOMContentLoaded", () => {
             ["Created at", formatDate(enquiry.created_at)]
         ];
 
+        const followUpStatus = getFollowUpStatus(enquiry);
+
+        const followUpBanner = document.createElement("div");
+        followUpBanner.className =
+            `follow-up-status ${followUpStatus.className}`;
+        followUpBanner.textContent = followUpStatus.label;
+        followUpBanner.setAttribute("role", "status");
+
+        enquiryDetails.appendChild(followUpBanner);
+
         for (const [label, value] of fields) {
             enquiryDetails.appendChild(createDetailRow(label, value));
         }
@@ -161,6 +171,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const followUpInput = document.createElement("input");
         followUpInput.id = "enquiry-follow-up";
         followUpInput.type = "date";
+        followUpInput.min = getLocalDateKey();
         followUpInput.className = "management-input";
         followUpInput.value = enquiry.follow_up_date
             ? enquiry.follow_up_date.slice(0, 10)
@@ -171,7 +182,51 @@ document.addEventListener("DOMContentLoaded", () => {
         followUpHint.textContent =
             "Leave the date unchanged if you only want to update the status.";
 
-        followUpField.append(followUpLabel, followUpInput, followUpHint);
+        const quickDateActions = document.createElement("div");
+        quickDateActions.className = "quick-date-actions";
+
+        function getDateOffsetKey(daysFromToday) {
+            const date = new Date();
+            date.setDate(date.getDate() + daysFromToday);
+            return getLocalDateKey(date);
+        }
+
+        function createQuickDateButton(label, daysFromToday) {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "quick-date-button";
+            button.textContent = label;
+
+            button.addEventListener("click", () => {
+                followUpInput.value = getDateOffsetKey(daysFromToday);
+            });
+
+            return button;
+        }
+
+        quickDateActions.append(
+            createQuickDateButton("Today", 0),
+            createQuickDateButton("Tomorrow", 1),
+            createQuickDateButton("In 3 days", 3)
+        );
+
+        const clearDateButton = document.createElement("button");
+        clearDateButton.type = "button";
+        clearDateButton.className = "quick-date-button";
+        clearDateButton.textContent = "Clear date";
+
+        clearDateButton.addEventListener("click", () => {
+            followUpInput.value = "";
+        });
+
+        followUpField.append(
+            followUpLabel,
+            followUpInput,
+            quickDateActions,
+            followUpHint
+        );
+
+        quickDateActions.appendChild(clearDateButton);
 
         const managementActions = document.createElement("div");
         managementActions.className = "reply-actions";
@@ -195,10 +250,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 status: statusSelect.value
             };
 
-            // Omit an empty date so an existing date is not accidentally cleared.
-            if (followUpInput.value) {
-                updateData.follow_up_date = followUpInput.value;
-            }
+            updateData.follow_up_date = followUpInput.value || null;
             try {
                 const updatedEnquiry = await sendRequest(
                     `/api/enquiries/${enquiry.id}`,
@@ -444,6 +496,46 @@ document.addEventListener("DOMContentLoaded", () => {
         return `${year}-${month}-${day}`;
     }
 
+    function getFollowUpStatus(enquiry) {
+        const status = (enquiry.status || "new").trim().toLowerCase();
+
+        if (status === "converted" || status === "lost") {
+            return {
+                label: `No active follow-up - ${status === "converted" ? "Converted" : "Lost"}`,
+                className: "follow-up-closed"
+            };
+        }
+
+        if (!enquiry.follow_up_date) {
+            return {
+                label: "No follow-up scheduled",
+                className: "follow-up-none"
+            };
+        }
+
+        const followUpDate = enquiry.follow_up_date.slice(0, 10);
+        const today = getLocalDateKey();
+
+        if (followUpDate < today) {
+            return {
+                label: "Overdue",
+                className: "follow-up-overdue"
+            };
+        }
+
+        if (followUpDate === today) {
+            return {
+                label: "Due today",
+                className: "follow-up-due"
+            };
+        }
+
+        return {
+            label: "Upcoming",
+            className: "follow-up-upcoming"
+        };
+    }
+
     function updateStatusFilterOptions() {
         const currentStatus = statusFilter.value;
         const isAttentionView = currentEnquiryView === "attention";
@@ -577,6 +669,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             item.addEventListener("click", () => {
                 selectedEnquiryId = enquiry.id;
+                clearMessage();
                 renderEnquiryList();
                 renderEnquiryDetails(enquiry);
             });
