@@ -51,7 +51,6 @@ def apply_ai_extraction(db: Session, enquiry: Enquiry, extracted_data):
     enquiry.enquiry_date = extracted_data.enquiry_date
     enquiry.number_of_people = extracted_data.number_of_people
     enquiry.additional_details = extracted_data.additional_details
-    enquiry.generated_reply = extracted_data.generated_reply
 
     db.commit()
     db.refresh(enquiry)

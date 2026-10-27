@@ -9,6 +9,7 @@ class EnquiryCreate(BaseModel):
     email: Optional[EmailStr] = None
     raw_message: str
 
+
 class EnquiryResponse(BaseModel):
     id: int
     customer_name: str
@@ -29,14 +30,15 @@ class EnquiryResponse(BaseModel):
     follow_up_date: Optional[date] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+    ai_extraction_succeeded: bool = True
 
-    model_config = {
-        "from_attributes": True
-    }
+    model_config = {"from_attributes": True}
+
 
 class EnquiryUpdate(BaseModel):
-    status: Optional[str] = None,
+    status: Optional[str] = None
     follow_up_date: Optional[date] = None
+
 
 class EnquiryExtraction(BaseModel):
     intent: Optional[str] = None
@@ -47,15 +49,14 @@ class EnquiryExtraction(BaseModel):
     enquiry_date: Optional[str] = None
     number_of_people: Optional[int] = None
     additional_details: Optional[str] = None
-    generated_reply: Optional[str] = None
 
-    model_config = {
-        "extra": "forbid"
-    }
+    model_config = {"extra": "forbid"}
+
 
 class ReplyGenerationResponse(BaseModel):
     enquiry_id: int
     reply: str
+
 
 class ReplyUpdate(BaseModel):
     reply: str

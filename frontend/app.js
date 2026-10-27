@@ -119,6 +119,85 @@ document.addEventListener("DOMContentLoaded", () => {
         for (const [label, value] of fields) {
             enquiryDetails.appendChild(createDetailRow(label, value));
         }
+        // Allow retrying extraction when no extracted details are present.
+        const extractedFields = [
+            enquiry.intent,
+            enquiry.action,
+            enquiry.location,
+            enquiry.requirement,
+            enquiry.budget,
+            enquiry.enquiry_date,
+            enquiry.number_of_people,
+            enquiry.additional_details
+        ];
+
+        const hasExtractedDetails = extractedFields.some(
+            value => value !== null &&
+                value !== undefined &&
+                value !== ""
+        );
+
+        if (!hasExtractedDetails) {
+            const extractionButton = document.createElement("button");
+            extractionButton.type = "button";
+            extractionButton.className = "button button-secondary";
+            extractionButton.textContent = "Retry AI Extraction";
+
+            const extractionStatus = document.createElement("p");
+            extractionStatus.className = "reply-status";
+            extractionStatus.hidden = true;
+            extractionStatus.setAttribute("role", "status");
+
+            extractionButton.addEventListener("click", async () => {
+                extractionButton.disabled = true;
+                extractionButton.textContent = "Extracting...";
+                extractionStatus.hidden = true;
+
+                try {
+                    await sendRequest(
+                        `/api/enquiries/${enquiry.id}/extract`,
+                        "POST"
+                    );
+
+                    selectedEnquiryId = enquiry.id;
+                    await loadEnquiries();
+
+                    showMessage(
+                        "AI extraction completed successfully."
+                    );
+                } catch (error) {
+                    console.error("AI extraction failed:", error);
+
+                    extractionStatus.textContent =
+                        "AI extraction failed. Please try again. Your enquiry has been saved.";
+                    extractionStatus.className = "reply-status error";
+                    extractionStatus.hidden = false;
+                } finally {
+                    extractionButton.disabled = false;
+                    extractionButton.textContent = "Retry AI Extraction";
+                }
+            });
+
+            const extractionSection = document.createElement("section");
+            extractionSection.className = "reply-section";
+
+            const extractionHeading = document.createElement("h4");
+            extractionHeading.textContent = "AI extraction";
+
+            const extractionDescription = document.createElement("p");
+            extractionDescription.className = "reply-description";
+            extractionDescription.textContent =
+                "No extracted details are available. Retry if AI extraction failed.";
+
+            extractionSection.append(
+                extractionHeading,
+                extractionDescription,
+                extractionButton,
+                extractionStatus
+            );
+
+            enquiryDetails.appendChild(extractionSection);
+        }
         // Enquiry status and follow-up management
         const managementSection = document.createElement("section");
         managementSection.className = "reply-section";
@@ -825,9 +904,16 @@ document.addEventListener("DOMContentLoaded", () => {
             selectedEnquiryId = createdEnquiry.id;
             await loadEnquiries();
 
-            showMessage(
-                "Enquiry created successfully. AI extraction may leave some fields empty if the original message doesn't contain that information."
-            );
+            if (createdEnquiry.ai_extraction_succeeded === false) {
+                showMessage(
+                    "Enquiry saved, but AI extraction failed. You can retry AI extraction from the enquiry details.",
+                    true
+                );
+            } else {
+                showMessage(
+                    "Enquiry created successfully. AI extraction may leave some fields empty if the original message doesn't contain that information."
+                );
+            }
         } catch (error) {
             console.error("Failed to create enquiry:", error);
             showMessage(error.message, true);
