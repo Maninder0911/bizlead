@@ -507,8 +507,13 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
+
+
+
         copyButton.addEventListener("click", async () => {
-            if (!editor.value.trim()) {
+            const replyText = editor.value;
+
+            if (!replyText.trim()) {
                 showReplyStatus(
                     "There is no reply to copy yet.",
                     true
@@ -517,16 +522,56 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             try {
-                await navigator.clipboard.writeText(editor.value);
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(replyText);
+                } else {
+                    throw new Error("Modern clipboard API unavailable");
+                }
+
                 showReplyStatus(
                     "Reply copied. You can now paste it into your messaging app."
                 );
             } catch (error) {
-                console.error("Clipboard copy failed:", error);
-                showReplyStatus(
-                    "Copying was blocked by the browser. Select the text and copy it manually.",
-                    true
+                console.warn(
+                    "Modern clipboard copy failed; trying fallback:",
+                    error
                 );
+
+                let fallbackSucceeded = false;
+                const temporaryTextArea = document.createElement("textarea");
+
+                try {
+                    temporaryTextArea.value = replyText;
+                    temporaryTextArea.setAttribute("readonly", "");
+                    temporaryTextArea.style.position = "fixed";
+                    temporaryTextArea.style.left = "-9999px";
+                    temporaryTextArea.style.top = "0";
+
+                    document.body.appendChild(temporaryTextArea);
+                    temporaryTextArea.focus();
+                    temporaryTextArea.select();
+                    temporaryTextArea.setSelectionRange(
+                        0,
+                        temporaryTextArea.value.length
+                    );
+
+                    fallbackSucceeded = document.execCommand("copy");
+                } catch (fallbackError) {
+                    console.warn("Clipboard fallback failed:", fallbackError);
+                } finally {
+                    temporaryTextArea.remove();
+                }
+
+                if (fallbackSucceeded) {
+                    showReplyStatus(
+                        "Reply copied. You can now paste it into your messaging app."
+                    );
+                } else {
+                    showReplyStatus(
+                        "Automatic copying is unavailable. Please select the reply text and copy it manually.",
+                        true
+                    );
+                }
             }
         });
 
