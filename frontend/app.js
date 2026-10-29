@@ -970,3 +970,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
     loadEnquiries();
 });
+
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+        navigator.serviceWorker
+            .register("/service-worker.js")
+            .then((registration) => {
+                console.log(
+                    "BizLead service worker registered:",
+                    registration.scope
+                );
+            })
+            .catch((error) => {
+                console.error(
+                    "BizLead service worker registration failed:",
+                    error
+                );
+            });
+    });
+}
